@@ -1,0 +1,10 @@
+node_modules/
+.DS_Store
+*.log
+npm-debug.log*
+
+# Playwright browser binaries/download cache (installed via `npx playwright install chromium`)
+.cache/ms-playwright/
+
+# Local scratch output from refresh scripts, if redirected to a file here
+*.scratch.md

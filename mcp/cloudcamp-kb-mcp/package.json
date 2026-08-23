@@ -1,0 +1,21 @@
+{
+  "name": "cloudcamp-kb-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local-first, read-only MCP server serving a human-reviewed local copy of the CloudCamp BD competition knowledge base. Never fetches the network on its own.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "setup": "node setup.mjs",
+    "refresh": "node refresh.mjs",
+    "refresh:official": "node refresh-official.mjs",
+    "refresh:official:deep": "node refresh-official.mjs --deep"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "playwright": "^1.62.1",
+    "turndown": "^7.2.4",
+    "zod": "^4.4.3"
+  }
+}
