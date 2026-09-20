@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+# This project has no deploy target: it's a private (package.json
+# "private": true), stdio-only local MCP server meant to be registered with
+# `claude mcp add`, not published to npm or shipped anywhere. There's
+# deliberately no CD job here for that reason — see README.md's security
+# posture section for why it stays local-only.
+jobs:
+  test:
+    name: Lint + smoke test (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+    defaults:
+      run:
+        working-directory: mcp/cloudcamp-kb-mcp
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: mcp/cloudcamp-kb-mcp/package-lock.json
+
+      # Deliberately npm ci, not npm install: fails on a lockfile that's
+      # out of sync with package.json instead of silently rewriting it.
+      - name: Install dependencies
+        run: npm ci
+
+      # Syntax-checks every script in the package, including the two
+      # refresh scripts that pull in playwright — this catches a broken
+      # import or a syntax error in them without ever launching a browser
+      # or making a network request (refresh scripts are human-run only,
+      # see README.md).
+      - name: Syntax check
+        run: npm run lint:syntax
+
+      # Boots the actual MCP server over its real stdio transport and
+      # exercises every tool (list_knowledge_sources + each
+      # get_knowledge_base_* source), using the MCP SDK's own client. Never
+      # touches the network or a refresh script.
+      - name: Smoke test
+        run: npm test
+
+  knowledge-base-files-present:
+    name: Knowledge base files exist and are non-empty
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check each source file referenced by index.js
+        run: |
+          set -euo pipefail
+          for f in knowledge-base.md knowledge-base-infinity-buildfest.md knowledge-base-ai-builders-congress.md; do
+            if [ ! -s "$f" ]; then
+              echo "::error file=$f::Missing or empty knowledge base file"
+              exit 1
+            fi
+            echo "ok - $f ($(wc -c < "$f") bytes)"
+          done

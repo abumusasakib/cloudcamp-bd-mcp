@@ -1,5 +1,7 @@
 # CloudCamp BD MCP — safe local mirror
 
+[![CI](https://github.com/abumusasakib/cloudcamp-bd-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/abumusasakib/cloudcamp-bd-mcp/actions/workflows/ci.yml)
+
 A local, security-conscious replacement for the community-posted
 `cloudcamp-bd-mcp.equisaas-bd.com` server. It gives your AI agent CloudCamp
 BD competition knowledge base content, but fixes every concern raised about
@@ -157,6 +159,27 @@ All three refresh commands (`refresh`, `refresh:official`, `refresh:official:dee
 4. Leave it to you to hand-update the relevant `knowledge-base*.md` file
    (keeping its provenance header accurate) if, after reviewing it, you
    trust the change.
+
+## CI
+
+`.github/workflows/ci.yml` runs on every push/PR to `main`:
+
+- **Lint + smoke test** (Node 20.x and 22.x): `npm run lint:syntax` syntax-checks
+  every script (including the two refresh scripts, without ever running
+  them), then `npm test` boots the real MCP server over its actual stdio
+  transport via the MCP SDK's own client, lists its tools, and calls every
+  `get_knowledge_base_*` tool to confirm each returns real content.
+- **Knowledge base files present**: a fast, dependency-free check that all
+  three `knowledge-base*.md` files exist and are non-empty.
+
+Neither job touches the network, launches a browser, or runs a refresh
+script — CI only proves the server itself is sound, the same "no live
+requests unless a human explicitly asks for one" posture the rest of this
+project keeps.
+
+**No CD job.** This package is `"private": true` and stdio-only — it's
+registered locally via `claude mcp add`, not published to npm or deployed
+anywhere, so there's nothing to ship after CI passes.
 
 ## Notes
 

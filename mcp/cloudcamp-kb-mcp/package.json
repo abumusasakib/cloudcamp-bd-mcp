@@ -10,7 +10,9 @@
     "setup": "node setup.mjs",
     "refresh": "node refresh.mjs",
     "refresh:official": "node refresh-official.mjs",
-    "refresh:official:deep": "node refresh-official.mjs --deep"
+    "refresh:official:deep": "node refresh-official.mjs --deep",
+    "test": "node smoke-test.mjs",
+    "lint:syntax": "node --check index.js && node --check setup.mjs && node --check refresh.mjs && node --check refresh-official.mjs && node --check smoke-test.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
