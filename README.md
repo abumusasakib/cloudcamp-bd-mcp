@@ -68,12 +68,20 @@ Original concerns and how this project addresses them, generally:
     - **deep** (`npm run refresh:official:deep`, i.e. `--deep`, default
       target: the Congress page) — same render, plus **clicks through**
       UI-gated content a plain render can't reach: all 11 domain tabs (to
-      reveal each domain's 5 challenge names) and all ~281 FAQ question
-      accordions (each opens a modal). Slower (~290 read-only clicks, a
-      couple of minutes) and only useful for pages with this kind of gated
-      content — currently just the Congress page. This is how
-      `knowledge-base-ai-builders-congress.md`'s full domain/challenge list
-      and complete FAQ were captured.
+      reveal each domain's 5 challenge names), the "Awards" nav item, and
+      all ~281 FAQ question accordions (each opens a modal). Slower (~291
+      read-only clicks, a couple of minutes) and only useful for pages with
+      this kind of gated content — currently just the Congress page. This is
+      how `knowledge-base-ai-builders-congress.md`'s full domain/challenge
+      list and complete FAQ were captured.
+      **Known finding (2026-09-20):** clicking "Awards" doesn't currently
+      reveal a distinct prize-amount section — it's captured anyway so a
+      future refresh picks up real content automatically if the site adds
+      it. As of that date the only published prize figure anywhere (this
+      page, its FAQ, or the official Participants Guide doc linked from
+      Resources & Links) is one illustrative example: *"the E-Commerce
+      domain awards 50,000 BDT to the Champion and 30,000 BDT to the
+      Runner-Up."* No full prize sheet is publicly reachable.
   - There is no refresh script for the Infinity BuildFest file — it only
     changes when the user provides a newer NotebookLM export.
 - `.claude/skills/cloudcamp-kb-sync/SKILL.md` — tells Claude Code how to use
@@ -132,8 +140,8 @@ npm run refresh:official
 CLOUDCAMP_OFFICIAL_URL="https://cloudcampbd.com/events-public" npm run refresh:official
 ```
 
-For the full click-through capture (domain tabs + every FAQ answer, ~290
-clicks, takes a couple of minutes):
+For the full click-through capture (domain tabs + the Awards nav item +
+every FAQ answer, ~291 clicks, takes a couple of minutes):
 
 ```bash
 cd mcp/cloudcamp-kb-mcp
