@@ -20,10 +20,21 @@
 //     Same render, but also CLICKS THROUGH UI-gated content a plain render
 //     can't reach: on the Congress page specifically, that's the 11 domain
 //     tabs (only the default-selected domain's sub-challenges render
-//     without a click) and all ~281 FAQ question accordions/modals (only
-//     titles render without a click). Slower (~290 read-only clicks against
-//     the live page, a couple of minutes) and only useful for pages that
-//     have this kind of gated content — currently just the Congress page.
+//     without a click), the "Awards" nav item, and all ~281 FAQ question
+//     accordions/modals (only titles render without a click). Slower
+//     (~290 read-only clicks against the live page, a couple of minutes)
+//     and only useful for pages that have this kind of gated content —
+//     currently just the Congress page.
+//
+//     Known finding (2026-09-20): clicking "Awards" in the top nav does
+//     NOT currently reveal a distinct prize-amount section — it's captured
+//     anyway in case the site adds real content behind that click later,
+//     but as of this writing the only published prize figure anywhere
+//     (this page, the FAQ, or the official Participants Guide doc linked
+//     from Resources & Links) is one illustrative example under the "What
+//     are the prizes?" FAQ answer: "the E-Commerce domain awards 50,000
+//     BDT to the Champion and 30,000 BDT to the Runner-Up." No full prize
+//     sheet is publicly reachable via this page as of that date.
 import { chromium } from "playwright";
 import TurndownService from "turndown";
 import { createInterface } from "node:readline/promises";
@@ -39,11 +50,12 @@ const TARGET_URL = process.env.CLOUDCAMP_OFFICIAL_URL || DEFAULT_URL;
 console.log("This will launch a local headless Chromium to RENDER (not just");
 console.log(`download) the live page at:\n    ${TARGET_URL}`);
 if (DEEP) {
-  console.log("...and then CLICK THROUGH its domain tabs and all FAQ question");
-  console.log("accordions to capture content a single render can't reach.");
-  console.log("This is a heavier pass: it will click roughly 290 elements on");
-  console.log("the live page (11 domain tabs + ~281 FAQ questions), all");
-  console.log("read-only interactions against cloudcampbd.com.");
+  console.log("...and then CLICK THROUGH its domain tabs, the Awards nav item,");
+  console.log("and all FAQ question accordions to capture content a single");
+  console.log("render can't reach. This is a heavier pass: it will click");
+  console.log("roughly 291 elements on the live page (11 domain tabs + the");
+  console.log("Awards nav item + ~281 FAQ questions), all read-only");
+  console.log("interactions against cloudcampbd.com.");
 }
 console.log("No LLM or third-party AI service is involved — rendering,");
 console.log("clicking, and HTML-to-markdown conversion all happen locally.");
@@ -150,6 +162,29 @@ async function runDeepCapture(page) {
       return (panel || container).innerText;
     });
     out.push(`### ${name}\n\n${detail}\n`);
+  }
+
+  // ---- Awards nav item: click it, capture whatever the page shows after ----
+  // As of 2026-09-20 this does not reveal a distinct section (see the header
+  // comment above) — the page content after the click is effectively the
+  // same as the un-clicked render. Captured anyway, deliberately, so that if
+  // cloudcampbd.com ever adds real prize-sheet content behind this nav item,
+  // the next refresh:official:deep run picks it up without code changes.
+  out.push("\n## Awards Section (nav click-through capture)\n");
+  const awardsClicked = await page.evaluate(() => {
+    const target = [...document.querySelectorAll("a, button")].find(
+      (el) => el.textContent.trim() === "Awards"
+    );
+    if (!target) return false;
+    target.click();
+    return true;
+  });
+  if (awardsClicked) {
+    await page.waitForTimeout(1500);
+    const awardsText = await page.evaluate(() => document.body.innerText);
+    out.push(awardsText);
+  } else {
+    out.push("(No element with the exact text \"Awards\" was found in the nav — selector may need updating.)\n");
   }
 
   // ---- FAQ: select "All", click through every question ----
